@@ -1,0 +1,1368 @@
+%% ============================================================================
+%%  Drosophila-Lang: un lenguaje esotérico Turing-completo sobre el conectoma
+%%  completo de Drosophila melanogaster
+%%
+%%  Compilación:  pdflatex drosophila_lang.tex  (dos pasadas)
+%%  Documento autocontenido: sin figuras externas ni ficheros .bib.
+%% ============================================================================
+\documentclass[11pt,a4paper]{article}
+
+%% --- Codificación, idioma y tipografía --------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english,spanish,es-noshorthands,es-tabla]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[margin=2.5cm]{geometry}
+
+%% --- Matemáticas ------------------------------------------------------------
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+
+%% --- Figuras, tablas y gráficos ---------------------------------------------
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds,shapes.geometric}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{subcaption}
+
+%% --- Código y algoritmos ----------------------------------------------------
+\usepackage{listings}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{enumitem}
+
+%% --- Referencias cruzadas (hyperref antes de cleveref) ----------------------
+\usepackage[colorlinks=true,linkcolor=blue!60!black,citecolor=green!40!black,
+            urlcolor=blue!60!black]{hyperref}
+\usepackage[spanish,nameinlink,noabbrev]{cleveref}
+
+\hypersetup{
+  pdftitle={Drosophila-Lang: un lenguaje esotérico Turing-completo sobre el
+            conectoma completo de Drosophila melanogaster},
+  pdfauthor={Nombre Apellido},
+  pdfkeywords={conectoma, FlyWire, Drosophila, lenguajes esotéricos,
+               completitud de Turing, cuerpo en champiñón, plasticidad dopaminérgica}
+}
+
+%% --- Entornos de teoremas ----------------------------------------------------
+\theoremstyle{plain}
+\newtheorem{teorema}{Teorema}
+\newtheorem{lema}{Lema}
+\newtheorem{proposicion}{Proposición}
+\newtheorem{corolario}{Corolario}
+\theoremstyle{definition}
+\newtheorem{definicion}{Definición}
+\theoremstyle{remark}
+\newtheorem{observacion}{Observación}
+
+\crefname{teorema}{teorema}{teoremas}
+\crefname{lema}{lema}{lemas}
+\crefname{proposicion}{proposición}{proposiciones}
+\crefname{corolario}{corolario}{corolarios}
+\crefname{definicion}{definición}{definiciones}
+\crefname{algorithm}{algoritmo}{algoritmos}
+\crefname{lstlisting}{listado}{listados}
+\crefname{table}{tabla}{tablas}
+\Crefname{table}{Tabla}{Tablas}
+
+%% --- Algoritmos en español ---------------------------------------------------
+\floatname{algorithm}{Algoritmo}
+\renewcommand{\listalgorithmname}{Lista de algoritmos}
+\renewcommand{\algorithmicrequire}{\textbf{Entrada:}}
+\renewcommand{\algorithmicensure}{\textbf{Salida:}}
+\algrenewcommand\algorithmicif{\textbf{si}}
+\algrenewcommand\algorithmicthen{\textbf{entonces}}
+\algrenewcommand\algorithmicelse{\textbf{si no}}
+\algrenewcommand\algorithmicfor{\textbf{para}}
+\algrenewcommand\algorithmicdo{\textbf{hacer}}
+\algrenewcommand\algorithmicend{\textbf{fin}}
+\algrenewcommand\algorithmicreturn{\textbf{devolver}}
+\algrenewcommand\algorithmicwhile{\textbf{mientras}}
+
+%% --- Listados de código ------------------------------------------------------
+\definecolor{fondocodigo}{RGB}{247,247,244}
+\definecolor{comentario}{RGB}{110,120,110}
+\definecolor{cadena}{RGB}{160,60,20}
+\definecolor{clave}{RGB}{20,60,140}
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{fondocodigo},
+  frame=single, rulecolor=\color{black!20},
+  columns=fullflexible, keepspaces=true,
+  breaklines=true, breakatwhitespace=true,
+  showstringspaces=false, upquote=true,
+  xleftmargin=0.5em, xrightmargin=0.5em, aboveskip=0.8em, belowskip=0.8em,
+  literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+           {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+           {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {¡}{{!`}}1 {¿}{{?`}}1 {ü}{{\"u}}1
+           {§}{{\S}}1 {≈}{{$\approx$}}1 {⇝}{{$\rightsquigarrow$}}1 {†}{{\dag}}1
+}
+\lstdefinelanguage{Drosophila}{
+  morecomment=[l]{;;},
+  morestring=[b]",
+  morekeywords={x_x},
+  sensitive=true
+}
+\lstdefinestyle{dros}{
+  language=Drosophila,
+  commentstyle=\color{comentario}\itshape,
+  stringstyle=\color{cadena},
+  keywordstyle=\color{clave}\bfseries
+}
+\lstdefinestyle{py}{
+  language=Python,
+  commentstyle=\color{comentario}\itshape,
+  stringstyle=\color{cadena},
+  keywordstyle=\color{clave}\bfseries
+}
+\renewcommand{\lstlistingname}{Listado}
+
+%% --- Macros ------------------------------------------------------------------
+\newcommand{\dros}{\textup{\textsc{Drosophila-Lang}}}
+\newcommand{\Dm}{\textit{Drosophila melanogaster}}
+\newcommand{\PAM}{\mathrm{PAM}}
+\newcommand{\PPL}{\mathrm{PPL1}}
+\newcommand{\GF}{\mathrm{GF}}
+\newcommand{\KC}{\mathrm{KC}}
+\newcommand{\MBON}{\mathrm{MBON}}
+\newcommand{\ORN}{\mathrm{ORN}}
+\newcommand{\sig}{\sigma}
+\newcommand{\ind}{\mathbf{1}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+
+%% ============================================================================
+\title{\textbf{Drosophila-Lang}: un lenguaje de programación esotérico y
+       Turing-completo ejecutado sobre el conectoma completo de
+       \textit{Drosophila melanogaster}}
+
+\author{
+  Nombre Apellido\thanks{Autor de correspondencia: \texttt{correo@institucion.org}}\\[2pt]
+  \small Departamento, Institución, Ciudad, País
+}
+
+\date{25 de septiembre de 2026}
+
+\begin{document}
+\maketitle
+
+%% ============================================================================
+\begin{abstract}
+Presentamos \dros{}, un lenguaje de programación esotérico cuyo modelo de
+ejecución no es una máquina de von Neumann, sino el cerebro de una mosca de
+la fruta. Los programas se ejecutan sobre el conectoma adulto completo FlyWire
+v783 (138\,639 neuronas, 2\,700\,513 conexiones con al menos cinco sinapsis y
+34\,153\,566 sinapsis en total), con signo sináptico derivado del
+neurotransmisor predicho. El código fuente se escribe como un mapa de
+glomérulos del lóbulo antenal: cada instrucción se asigna, mediante un
+procedimiento de reclutamiento guiado por la anatomía, a una neurona real
+identificada (neuronas de proyección, células de Kenyon, neuronas de salida
+del cuerpo en champiñón, dopaminérgicas PAM y PPL1, neuronas locales del
+cuerno lateral, receptores olfativos, motoneuronas, la descendente DNa02, la
+motoneurona MN9 y la Fibra Gigante DNp01). La memoria del programa no reside
+en una RAM, sino en la fuerza de sinapsis entre células de Kenyon y neuronas
+de salida, modificadas por una regla neuromoduladora dopaminérgica análoga a
+la que sustenta el aprendizaje olfativo en la mosca. Demostramos que el
+lenguaje es Turing-completo mediante una reducción a máquinas de registros de
+Minsky, acotamos la probabilidad de error de su dinámica estocástica y
+caracterizamos las órbitas del sistema en el límite determinista. Aportamos
+un intérprete en Python, de código abierto y reproducible, que resuelve
+programas de ejemplo (impresión de caracteres, «Hola, Mundo» en UTF-8 y suma
+de enteros por transferencia sináptica) y cuantifica la actividad evocada en
+el resto del cerebro real. Observamos una transición abrupta de fiabilidad en
+función de la temperatura neuronal, con fiabilidad perfecta en 40 de 40 ensayos
+para $\beta\ge 24$ y fallo total para $\beta\le 12$.
+
+\medskip
+\noindent\textbf{Palabras clave:} conectoma, FlyWire, \textit{Drosophila},
+lenguajes esotéricos, completitud de Turing, cuerpo en champiñón,
+plasticidad dopaminérgica, sistemas dinámicos.
+\end{abstract}
+
+\begin{otherlanguage}{english}
+\begin{abstract}
+We present \dros{}, an esoteric programming language whose execution model
+is the brain of a fruit fly rather than a von Neumann machine. Programs run
+on the complete adult FlyWire v783 connectome (138{,}639 neurons, 2{,}700{,}513
+connections with at least five synapses), with synaptic signs derived from
+predicted neurotransmitters. Each instruction is mapped, by an
+anatomy-guided recruitment procedure, onto an identified real neuron.
+Program memory lives in Kenyon cell--to--mushroom body output neuron
+synapses rewritten by a dopaminergic neuromodulatory rule. We prove Turing
+completeness by reduction to Minsky register machines, bound the error of
+the stochastic dynamics, and release a reproducible Python interpreter.
+\end{abstract}
+\end{otherlanguage}
+
+%% ============================================================================
+\section{Introducción}
+\label{sec:intro}
+
+Los lenguajes de programación esotéricos exploran los límites de lo que puede
+considerarse cómputo y de cómo puede expresarse~\cite{mateas2005}. Aunque suelen
+concebirse como ejercicios lúdicos o estéticos, algunos plantean preguntas
+serias sobre el sustrato físico del cálculo. Paralelamente, la neurociencia de
+sistemas ha alcanzado un hito: la reconstrucción del diagrama de conexiones
+completo del cerebro de una mosca adulta, \Dm{}, por el consorcio
+FlyWire~\cite{dorkenwald2024,schlegel2024}. Ese conectoma ya se ha utilizado
+para construir modelos computacionales del cerebro entero que predicen
+respuestas sensoriomotoras~\cite{shiu2024} y actividad en el sistema
+visual~\cite{lappalainen2024}.
+
+Este trabajo une ambas líneas. Nos preguntamos si es posible definir un
+lenguaje de programación, con sintaxis, semántica e intérprete, cuyo modelo de
+ejecución sea literalmente la propagación de actividad sobre las neuronas
+reales identificadas de una mosca, y cuya memoria resida en las sinapsis que
+la biología utiliza para aprender. La respuesta que ofrecemos es
+\dros{}.
+
+El lenguaje se apoya en tres principios de diseño que conviene explicitar
+desde el comienzo. El primero es el \emph{emergentismo}: ninguna neurona
+contiene el programa; este solo existe como la trayectoria que recorre la
+excitación a lo largo del tiempo. El segundo es la \emph{percepción}: la
+ejecución comienza con un estímulo olfativo sobre un glomérulo, y los datos
+de entrada se entregan como concentraciones de olor a receptores olfativos
+reales. El tercero es la \emph{muerte temporal}: la parada del programa
+coincide con el disparo de la Fibra Gigante, la neurona del reflejo de
+escape, tras el cual la simulación se detiene.
+
+\paragraph{Contribuciones.} Las aportaciones de este artículo son las siguientes:
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item Un modelo dinámico híbrido (\cref{sec:modelo}) que combina neuronas de
+        integración y disparo sobre el conectoma FlyWire con un circuito
+        implantado de unidades estocásticas de umbral, y una regla de
+        plasticidad dopaminérgica en sinapsis célula de Kenyon $\to$ MBON.
+  \item Un lenguaje formal, con gramática EBNF y semántica operacional con
+        latencias exactas (\cref{sec:lenguaje}).
+  \item Una demostración de completitud de Turing por reducción a máquinas
+        de Minsky, una cota de error para la dinámica estocástica y una
+        tricotomía de órbitas en el límite determinista (\cref{sec:turing}).
+  \item Un procedimiento de reclutamiento anatómico que asigna cada papel del
+        programa a una neurona real identificada, siguiendo conexiones reales
+        cuando existen (\cref{sec:implementacion}).
+  \item Un intérprete de código abierto y una evaluación empírica sobre el
+        conectoma real (\cref{sec:resultados}).
+\end{enumerate}
+
+\paragraph{Alcance.} \dros{} no pretende afirmar que la mosca real ejecute
+estos programas. El circuito del programa se implanta sobre neuronas reales,
+de forma análoga a una manipulación transgénica, y está protegido por
+construcción frente a la actividad natural del resto del cerebro. El valor de
+la propuesta reside en su rigor formal, en su fidelidad a la identidad y a la
+anatomía de las neuronas empleadas y en su capacidad para visualizar cómo un
+cómputo abstracto se propaga por un sistema nervioso real.
+
+%% ============================================================================
+\section{Trabajos relacionados}
+\label{sec:relacionados}
+
+\paragraph{Cómputo neuronal y completitud de Turing.} McCulloch y Pitts
+mostraron que las redes de neuronas de umbral realizan cualquier función
+lógica finita~\cite{mcculloch1943}. Siegelmann y Sontag probaron que las redes
+recurrentes con pesos racionales y activación saturada lineal son
+Turing-completas~\cite{siegelmann1995}. Nuestra construcción se aparta de esta
+última: las activaciones son binarias y toda la memoria no acotada reside en
+pesos sinápticos enteros, lo que permite una reducción directa a las máquinas
+de registros de Minsky~\cite{minsky1967}. La conexión entre sistemas dinámicos
+e indecidibilidad fue formalizada, entre otros, por Moore~\cite{moore1990}.
+
+\paragraph{Conectómica y modelos del cerebro entero.} El hemicerebro de
+\textit{Drosophila}~\cite{scheffer2020} y, posteriormente, el cerebro completo
+FlyWire~\cite{dorkenwald2024}, anotado con más de 8\,000 tipos
+celulares~\cite{schlegel2024}, han hecho posible simular el cerebro entero
+de la mosca. Shiu \emph{et al.}~\cite{shiu2024} construyeron un modelo de
+integración y disparo con fugas sobre FlyWire que reproduce la activación de
+la motoneurona MN9 ante estímulos azucarados; su tabla de conectividad es la
+que empleamos aquí.
+
+\paragraph{El cuerpo en champiñón como sustrato de memoria.} El cuerpo en
+champiñón es el centro del aprendizaje olfativo asociativo en la mosca. Las
+células de Kenyon (KC) reciben entradas convergentes y aleatorias de las
+neuronas de proyección~\cite{caron2013}; la neurona APL impone una
+inhibición global que esparce la codificación~\cite{lin2014}; y las neuronas
+dopaminérgicas (DAN) modifican de forma compartimentada las sinapsis entre
+KC y neuronas de salida (MBON)~\cite{aso2014,cohn2015,hige2015}. Este es,
+precisamente, el mecanismo que \dros{} utiliza como memoria.
+
+\paragraph{Neuronas efectoras identificadas.} El glomérulo DA1 recibe los
+receptores Or67d, sensibles a la feromona masculina cVA~\cite{kurtovic2007}.
+MN9 controla la extensión de la probóscide~\cite{gordon2009}. DNa02 es una
+neurona descendente implicada en el giro durante la marcha, y DNp01 es la
+Fibra Gigante que desencadena el escape~\cite{namiki2018,allen2006}.
+
+%% ============================================================================
+\section{Modelo dinámico}
+\label{sec:modelo}
+
+\subsection{El sustrato: conectoma FlyWire}
+
+Sea $V$ el conjunto de las $N=138\,639$ neuronas de la tabla de conectividad
+FlyWire v783 distribuida con el modelo de Shiu \emph{et al.}~\cite{shiu2024}.
+Para cada par $(j,i)$ con $c_{ij}\geq 5$ sinapsis de $j$ a $i$ (umbral
+estándar de FlyWire), definimos un signo $e_j\in\{+1,-1\}$ según el
+neurotransmisor predicho de $j$: la acetilcolina es excitadora y el GABA y el
+glutamato, inhibidores. El resultado es un grafo dirigido con 2\,700\,513
+aristas. Cada neurona se anota con su tipo celular, superclase, clase y
+hemisferio a partir de Schlegel \emph{et al.}~\cite{schlegel2024}. La
+\cref{tab:superclases} resume la composición del sustrato.
+
+\begin{table}[t]
+\centering
+\caption{Composición del sustrato FlyWire v783 por superclase (neuronas
+presentes en la tabla de conectividad).}
+\label{tab:superclases}
+\begin{tabular}{lr@{\hspace{2.5em}}lr}
+\toprule
+Superclase & Neuronas & Superclase & Neuronas \\
+\midrule
+óptica                 & 77\,530 & ascendente           & 1\,736 \\
+central                & 32\,379 & descendente          & 1\,299 \\
+sensorial              & 16\,352 & sensorial ascendente &    581 \\
+proyección visual      &  8\,038 & centrífuga visual    &    524 \\
+motora                 &    110  & endocrina            &     76 \\
+\midrule
+\multicolumn{3}{l}{Total (incluidas 14 sin anotar)} & 138\,639 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Dinámica del cerebro natural}
+
+Los pesos naturales se normalizan por la entrada total de cada neurona:
+\begin{equation}
+  \tilde w_{ij} \;=\; \frac{e_j\, c_{ij}}{\sum_k c_{ik}},
+  \qquad\text{de modo que}\qquad \sum_j \lvert \tilde w_{ij}\rvert = 1 .
+  \label{eq:normalizacion}
+\end{equation}
+Cada neurona natural es una unidad de integración y disparo en tiempo discreto
+con potencial $v_i$, fuga $\lambda$, umbral $\theta$ y periodo refractario de
+$\rho$ pasos:
+\begin{align}
+  v_i(t+1) &= \lambda\, v_i(t) + \sum_j \tilde w_{ij}\, s_j(t),
+  \label{eq:lif}\\
+  s_i(t+1) &= \ind\!\left[\, v_i(t+1)\ge\theta \;\wedge\; r_i(t)=0 \,\right],
+  \label{eq:disparo-natural}
+\end{align}
+donde, tras un disparo, $v_i$ se reinicia a cero y $r_i$ se fija en $\rho$.
+La normalización~\eqref{eq:normalizacion} resultó necesaria: con pesos
+proporcionales al número bruto de sinapsis, un único disparo de las neuronas
+de proyección de DA1 generaba actividad autosostenida en miles de neuronas.
+Con $\theta = 0{,}08$, es decir, cuando dispara alrededor del 8\,\% de la
+entrada de una neurona, la respuesta evocada es dispersa (unas 350 neuronas)
+y se extingue en unos siete pasos.
+
+\subsection{El circuito implantado}
+
+El programa se instala como un circuito de $N_p$ neuronas \emph{reclutadas},
+$P\subset V$, que obedecen a unidades estocásticas de umbral. Para $i\in P$,
+\begin{align}
+  h_i(t) &= \sum_{j} W^{P}_{ij}(t)\, s_j(t) \;+\; b_i \;+\; I_i(t)
+            \;+\; \kappa \sum_j \tilde w_{ij}\, s_j(t),
+  \label{eq:potencial-implante}\\
+  \Pr\!\left[s_i(t+1)=1 \,\middle|\, \mathcal F_t\right] &= \sig\!\big(\beta\, h_i(t)\big),
+  \qquad \sig(x) = \frac{1}{1+e^{-x}},
+  \label{eq:disparo-implante}
+\end{align}
+donde $W^P$ son los pesos del implante (enteros), $b_i\in\Z+\tfrac12$ el
+sesgo, $I_i(t)$ el estímulo externo, $\beta=1/T$ la inversa de la temperatura
+neuronal y $\kappa=\tfrac18$ el coeficiente de \emph{susurro} con el que la
+entrada natural influye en la neurona reclutada. Las neuronas reclutadas
+conservan sus sinapsis de salida reales, de modo que sus espigas se propagan
+al resto del cerebro según~\eqref{eq:lif}.
+
+\subsection{Plasticidad dopaminérgica}
+
+Cada engrama $r\in\mathcal R$ es una sinapsis plástica $K_r\to M_r$ entre una
+célula de Kenyon y una MBON, inervada por una dopaminérgica apetitiva
+$\PAM_r$ y una aversiva $\PPL_r$. Su peso $w_r(t)\in\N$ evoluciona según
+\begin{equation}
+  w_r(t+1) = \max\!\Big(0,\; w_r(t) + \eta\,\big[s_{\PAM_r}(t) - s_{\PPL_r}(t)\big]\Big),
+  \qquad \eta = 1 .
+  \label{eq:plasticidad}
+\end{equation}
+Equivalentemente, $W^P(t) = W^P_0 + \sum_r w_r(t)\, e_{M_r}e_{K_r}^{\!\top}$.
+La regla es neuromoduladora y compartimentada, en consonancia con la
+organización del cuerpo en champiñón~\cite{aso2014,cohn2015,hige2015}.
+
+\subsection{Estímulo, lectura y parada}
+
+El estímulo inicial es $I(0)=e_{c_0}$, con $c_0$ la neurona de entrada del
+glomérulo soplado. La salida se lee en los instantes $t_k$ en que dispara la
+neurona de estrobo DNa02:
+\begin{equation}
+  y_k = \sum_{j=0}^{7} 2^{j}\, s_{\mathrm{MN}_j}(t_k),
+  \label{eq:byte}
+\end{equation}
+y se interpreta el flujo de bytes como UTF-8. Un segundo canal cuenta las
+espigas de MN9 entre estrobos y las imprime en decimal. El tiempo de muerte es
+$\tau=\inf\{t\ge1: s_{\GF}(t)=1\}$. La \cref{tab:parametros} recoge los
+parámetros empleados.
+
+\begin{table}[t]
+\centering
+\caption{Parámetros del modelo empleados en todos los experimentos.}
+\label{tab:parametros}
+\begin{tabular}{llc}
+\toprule
+Símbolo & Significado & Valor \\
+\midrule
+$c_{\min}$ & sinapsis mínimas por conexión & 5 \\
+$\lambda$  & fuga de membrana natural por paso & 0,5 \\
+$\theta$   & umbral natural (fracción de entrada) & 0,08 \\
+$\rho$     & periodo refractario natural (pasos) & 2 \\
+$\kappa$   & coeficiente de susurro sobre el implante & $1/8$ \\
+$\beta$    & inversa de la temperatura del implante & 64 \\
+$\eta$     & cuanto de plasticidad dopaminérgica & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%% ============================================================================
+\section{El lenguaje}
+\label{sec:lenguaje}
+
+\subsection{Morfología}
+
+Un programa \dros{} es un mapa de glomérulos. Cada línea define un glomérulo,
+es decir, un estado del programa, seguido de una secuencia de acciones y de un
+desenlace. Si el nombre del glomérulo coincide con uno real del lóbulo antenal
+(de entre los 53 con receptores anotados en FlyWire), el estado se asigna a su
+neurona de proyección real. El \cref{lst:ejemplo} muestra la forma general.
+
+\begin{lstlisting}[style=dros,caption={Forma general de un programa.},label={lst:ejemplo}]
+%cepa Canton-S            ;; semilla del ruido neuronal
+$ memoria = 3             ;; engrama: sinapsis KC -> MBON con fuerza 3
+~~~> (DM1)                ;; soplo inicial I(0)
+(DM1) +memoria !'a' ~> (VA2)
+(VA2) ?memoria ~> (DM1) | (DL5)
+(DL5) x_x                 ;; muerte
+\end{lstlisting}
+
+\subsection{Gramática}
+
+La \cref{fig:ebnf} define la sintaxis en EBNF. Se admiten alias Unicode
+(\S{} para \texttt{\$}, $\approx\approx>$ para \texttt{\textasciitilde\textasciitilde\textasciitilde>},
+$\rightsquigarrow$ para \texttt{\textasciitilde>} y \dag{} para \texttt{x\_x}).
+
+\begin{figure}[t]
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+programa   = { linea } ;
+linea      = [ sentencia ] [ ";;" comentario ] salto ;
+sentencia  = directiva | engrama | soplo | glomerulo ;
+directiva  = "%" ( "cepa" | "temperatura" ) valor ;
+engrama    = ( "§" | "$" ) nombre [ "=" natural ] ;
+soplo      = ( "~~~>" | "≈≈>" ) glom ;
+glomerulo  = glom { accion } desenlace ;
+glom       = "(" nombre ")" ;
+accion     = "+" nombre | "-" nombre | "<" nombre | "!" emision ;
+emision    = caracter | cadena | natural | "*" ;      (* natural en [0,255] *)
+desenlace  = flecha glom
+           | "?" nombre flecha glom "|" glom
+           | "x_x" | "†" ;
+flecha     = "~>" | "⇝" ;
+nombre     = letra { letra | digito | "_" } ;        (* distinto de "x_x" *)
+\end{lstlisting}
+\caption{Gramática de \dros{} en notación EBNF.}
+\label{fig:ebnf}
+\end{figure}
+
+\paragraph{Semántica estática.} Los nombres de glomérulo son únicos; todo
+destino debe estar definido; hay a lo sumo un soplo y, en su ausencia, se
+sopla el primer glomérulo. Un engrama usado sin declarar nace con $w=0$. La
+anatomía impone una restricción adicional: el conectoma contiene solo 16
+neuronas PPL1, por lo que un programa admite como máximo 16 engramas, y cada
+prueba \texttt{?r} consume cuatro de las 514 neuronas locales del cuerno
+lateral, por lo que admite como máximo 128 pruebas. Ambos límites dejan sitio
+para una máquina universal (\cref{sec:turing}).
+
+\subsection{Semántica operacional}
+
+Cada glomérulo se despliega en una cadena de micro-estados, uno por acción,
+y cada micro-estado ocupa una neurona reclutada. La \cref{tab:semantica}
+especifica, para cada construcción, el circuito implantado, las neuronas
+reales que lo ejecutan y su latencia exacta en pasos.
+
+\begin{table}[t]
+\centering
+\caption{Semántica operacional: construcción, circuito implantado, neuronas
+reales reclutadas y latencia. $C$ denota la neurona del micro-estado activo y
+$c$ la concentración de entrada.}
+\label{tab:semantica}
+\small
+\begin{tabularx}{\linewidth}{@{}l X l c@{}}
+\toprule
+Construcción & Circuito & Neuronas reales & Latencia \\
+\midrule
+\texttt{+r}        & $C\to\PAM_r$; $C\to$ siguiente & PAM & 1 \\
+\texttt{-r}        & $C\to\PPL_r$; $C\to$ siguiente & PPL1 & 1 \\
+\texttt{<r}        & ráfaga de $c$ espigas en $\ORN_r\to\PAM_r$; retorno & ORN, ALLN & $c+4$ \\
+\texttt{!b}        & $C\to\{\mathrm{MN}_j: b_j=1\}\cup\{\mathrm{DNa02}\}$ & motoneuronas, DNa02 & 1 por byte \\
+\texttt{!*}        & $C\to\mathrm{MN9}$ & MN9 & 1 \\
+\texttt{\textasciitilde> (X)} & fusionado con la última acción (relevo si no hay acciones) & --- & 0 o 1 \\
+\texttt{?r \textasciitilde> (A) | (B)} & $K_r$, $M_r$, dos retardos y dos compuertas (\cref{fig:prueba}) & KC, MBON, LHLN & 4 \\
+\texttt{x\_x}      & $C\to\GF$ & DNp01 & 1 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Entrada y salida}
+
+La entrada es una cola de concentraciones naturales. Cuando dispara el
+micro-estado de \texttt{<r}, el entorno entrega $c$ espigas consecutivas a
+$\ORN_r$, cada una de las cuales activa $\PAM_r$ e incrementa $w_r$ en una
+unidad según~\eqref{eq:plasticidad}; al terminar, una neurona local del
+lóbulo antenal devuelve el control al programa. Si la cola se ha agotado,
+$c=0$. La salida se decodifica según~\eqref{eq:byte} y mediante el conteo de
+MN9.
+
+%% ============================================================================
+\section{Completitud de Turing y propiedades dinámicas}
+\label{sec:turing}
+
+\subsection{Puertas lógicas en el cuerpo en champiñón}
+
+Con $\Theta$ la función escalón, las puertas elementales se escriben como
+neuronas de umbral con sesgo semientero:
+\begin{equation}
+\begin{aligned}
+  \mathrm{Y}(x,y)&=\Theta\!\left(x+y-\tfrac32\right), &\qquad
+  \mathrm{O}(x,y)&=\Theta\!\left(x+y-\tfrac12\right),\\
+  \mathrm{NO}(x)&=\Theta\!\left(\tfrac12-x\right), &\qquad
+  \mathrm{NOY}(x,y)&=\Theta\!\left(\tfrac32-x-y\right).
+\end{aligned}
+  \label{eq:puertas}
+\end{equation}
+La puerta Y corresponde a la detección de coincidencias de una célula de
+Kenyon; la NO, a la inhibición GABAérgica de la neurona APL; y la NOY, a una
+MBON con actividad tónica que recibe inhibición. Como NOY es funcionalmente
+completa, todo circuito booleano finito es realizable~\cite{mcculloch1943}.
+
+\subsection{Cota de error}
+
+\begin{lema}[Margen]
+\label{lem:margen}
+En todo circuito compilado y para toda neurona reclutada $i$, se cumple
+$\lvert h_i(t)\rvert \ge \tfrac38$.
+\end{lema}
+\begin{proof}
+Los pesos del implante y el estímulo son enteros, y los sesgos pertenecen a
+$\Z+\tfrac12$; por tanto, la parte del implante en~\eqref{eq:potencial-implante}
+dista al menos $\tfrac12$ de cero. Por~\eqref{eq:normalizacion},
+$\lvert\kappa\sum_j\tilde w_{ij}s_j\rvert \le \kappa=\tfrac18$. Luego
+$\lvert h_i\rvert\ge\tfrac12-\tfrac18=\tfrac38$.
+\end{proof}
+
+\begin{corolario}
+\label{cor:error}
+La probabilidad de que, en $\tau$ pasos, la trayectoria estocástica del
+implante difiera de su límite determinista ($\beta\to\infty$) satisface
+\begin{equation}
+  \Pr[\text{desviación}] \;\le\; \tau\, N_p\, \sig\!\left(-\tfrac{3\beta}{8}\right)
+  \;\le\; \tau\, N_p\, e^{-3\beta/8}.
+\end{equation}
+\end{corolario}
+\begin{proof}
+Por el \cref{lem:margen}, cada neurona reclutada se aparta del valor
+determinista con probabilidad a lo sumo $\sig(-3\beta/8)$ en cada paso. La
+cota se sigue de la desigualdad de la unión sobre $N_p$ neuronas y $\tau$ pasos.
+\end{proof}
+
+Con $\beta=64$, la cota por neurona y paso es $\sig(-24)\approx3{,}8\times10^{-11}$.
+
+\subsection{Reducción a máquinas de Minsky}
+
+Una máquina de Minsky $\mathcal M=(Q,q_0,\delta)$ con registros
+$r_1,\dots,r_m\in\N$ ejecuta instrucciones de tres tipos:
+$\mathrm{INC}(r,q')$; $\mathrm{JZDEC}(r,q',q'')$, que resta uno y salta a
+$q'$ si $r>0$ o salta a $q''$ si $r=0$; y $\mathrm{HALT}$. Con $m=2$ ya son
+universales~\cite{minsky1967}.
+
+\begin{definicion}[Traducción]
+\label{def:traduccion}
+A cada estado $q$ se le asocia un glomérulo con neurona de control $C_q$
+(sesgo $-\tfrac12$) y a cada registro $r$ un engrama. $\mathrm{INC}(r,q')$ se
+traduce en $C_q\to\PAM_r$ y $C_q\to C_{q'}$. $\mathrm{HALT}$ se traduce en
+$C_q\to\GF$. $\mathrm{JZDEC}(r,q',q'')$ se traduce en el circuito de la
+\cref{fig:prueba}: $C_q\to K_r$, la cadena de retardo $C_q\to A_1\to A_2$ y
+dos compuertas
+\begin{equation}
+  G_{\neq0}=\Theta\!\left(A_2+M_r-\tfrac32\right),\qquad
+  G_{=0}=\Theta\!\left(A_2-M_r-\tfrac12\right),
+\end{equation}
+con $M_r=\Theta\!\left(w_r K_r-\tfrac12\right)$, $G_{\neq0}\to\{\PPL_r,C_{q'}\}$
+y $G_{=0}\to C_{q''}$.
+\end{definicion}
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  >={Stealth[length=2.2mm]},
+  neu/.style={circle,draw,thick,minimum size=9mm,inner sep=0pt,font=\footnotesize},
+  dan/.style={neu,fill=orange!15,minimum size=12mm,font=\scriptsize},
+  gate/.style={neu,fill=blue!8},
+  ctl/.style={neu,fill=green!12},
+  lab/.style={font=\scriptsize,text=black!70},
+  node distance=12mm and 16mm]
+  \node[ctl] (C) {$C_q$};
+  \node[neu,right=of C] (K) {$K_r$};
+  \node[neu,right=22mm of K] (M) {$M_r$};
+  \node[neu,below=of C] (A1) {$A_1$};
+  \node[neu,right=of A1] (A2) {$A_2$};
+  \node[gate,right=22mm of A2,yshift=6mm] (Gnz) {$G_{\neq0}$};
+  \node[gate,right=22mm of A2,yshift=-10mm] (Gz) {$G_{=0}$};
+  \node[ctl,right=18mm of Gnz] (Q1) {$C_{q'}$};
+  \node[ctl,right=18mm of Gz] (Q2) {$C_{q''}$};
+  \node[dan,above=10mm of K] (PAM) {$\PAM_r$};
+  \node[dan,above=10mm of M] (PPL) {$\PPL_r$};
+  \draw[->,thick] (C) -- (K);
+  \draw[->,very thick,red!70!black] (K) -- node[below,lab]{$w_r(t)$} (M);
+  \draw[->,thick] (C) -- (A1);
+  \draw[->,thick] (A1) -- (A2);
+  \draw[->,thick] (A2) -- (Gnz);
+  \draw[->,thick] (A2) -- (Gz);
+  \draw[->,thick] (M) -- node[right,lab]{$+1$} (Gnz);
+  \draw[-{Bar[width=2.5mm]},thick] (M) to[bend left=35] node[right,lab,pos=0.7]{$-1$} (Gz);
+  \draw[->,thick] (Gnz) -- (Q1);
+  \draw[->,thick] (Gz) -- (Q2);
+  \draw[->,thick,dashed] (Gnz.east) to[out=15,in=0,looseness=1.6] (PPL.east);
+  \draw[->,dashed,orange!70!black] (PAM.south east) to[bend left=10] ($ (K)!0.5!(M) + (0,0.8mm) $);
+  \draw[->,dashed,orange!70!black] (PPL.south) -- ($ (K)!0.62!(M) + (0,0.8mm) $);
+  \node[lab,align=center,below=1mm of A2] {LHLN};
+  \node[lab,align=center,below=1mm of A1] {LHLN};
+  \node[lab,above=0.5mm of C] {PN / KC};
+\end{tikzpicture}
+\caption{Circuito implantado para la instrucción de prueba
+\texttt{?r \textasciitilde> (A) | (B)}. La célula de Kenyon $K_r$ lee la
+sinapsis plástica $w_r$ (rojo); la MBON $M_r$ responde solo si $w_r\ge1$. Las
+compuertas del cuerno lateral combinan esa respuesta con la señal retardada
+del estado. Las dopaminérgicas (naranja) modulan la sinapsis del engrama.}
+\label{fig:prueba}
+\end{figure}
+
+\begin{lema}[Unicidad del foco]
+\label{lem:foco}
+En el límite determinista, si en el instante de inicio de una instrucción
+exactamente una neurona de control está activa y todas las neuronas
+transitorias están en reposo, la misma propiedad se cumple al inicio de la
+instrucción siguiente.
+\end{lema}
+\begin{proof}
+Por inspección de cada traducción: toda neurona de control proyecta
+exclusivamente a su sucesora o a su circuito de prueba, y en este último solo
+una de las compuertas $G_{\neq0}$, $G_{=0}$ puede superar su umbral, puesto
+que requieren valores opuestos de $M_r$. Las neuronas transitorias carecen de
+autoconexiones y vuelven al reposo tras un paso.
+\end{proof}
+
+\begin{lema}[Coherencia temporal]
+\label{lem:coherencia}
+Toda lectura de $w_r$ efectuada por una instrucción observa el efecto de
+todas las escrituras de las instrucciones anteriores.
+\end{lema}
+\begin{proof}
+Un $\mathrm{INC}$ que comienza en $t$ activa $\PAM_r$ en $t+1$ y, por
+\eqref{eq:plasticidad}, modifica el peso efectivo en $t+2$. Una prueba que
+comienza en $t'\ge t+1$ activa $K_r$ en $t'+1\ge t+2$, que lee el peso ya
+actualizado. Una prueba iniciada en $t'$ decrementa mediante $G_{\neq0}(t'+3)
+\to\PPL_r(t'+4)$, con efecto en $t'+5$, mientras que la siguiente instrucción
+comienza en $t'+4$ y lee, a lo sumo, en $t'+5$.
+\end{proof}
+
+\begin{lema}[Capacidad]
+\label{lem:capacidad}
+La traducción de una máquina de Minsky con $m$ registros y $b$ instrucciones
+$\mathrm{JZDEC}$ puede implantarse en FlyWire v783 si $m\le16$ y $b\le128$.
+\end{lema}
+\begin{proof}
+Cada registro consume una célula de Kenyon, una MBON, una PAM, una PPL1 y un
+receptor olfativo; cada $\mathrm{JZDEC}$, cuatro neuronas locales del cuerno
+lateral (dos retardos y dos compuertas); cada estado, una neurona de
+proyección o una célula de Kenyon; los efectores, once neuronas fijas. Las
+anotaciones de FlyWire contienen 5\,177 células de Kenyon, 96 MBON, 307 PAM,
+16 PPL1 y 514 neuronas locales del cuerno lateral. Las restricciones que
+primero se agotan son $m\le16$ (PPL1) y $4b\le514$ (cuerno lateral); las
+demás quedan muy lejos de agotarse con $m\le16$ y $b\le128$.
+\end{proof}
+
+\begin{teorema}[Simulación de máquinas de Minsky]
+\label{thm:simulacion}
+Para toda máquina de Minsky $\mathcal M$ que cumpla las cotas del
+\cref{lem:capacidad} existe un programa $P_{\mathcal M}$ de \dros{} tal que,
+en el límite $\beta\to\infty$, $P_{\mathcal M}$ provoca el disparo de la
+Fibra Gigante si y solo si $\mathcal M$ se detiene, y en cada macro-paso los
+pesos $w_r$ coinciden con los registros de $\mathcal M$.
+\end{teorema}
+\begin{proof}
+Por inducción sobre el número de macro-pasos. La configuración $(q,\vec n)$
+de $\mathcal M$ se corresponde con el estado en que $C_q$ es la única neurona
+de control activa y $\vec w=\vec n$. El caso base lo proporciona el soplo
+$I(0)=e_{C_{q_0}}$ con pesos iniciales declarados. El paso inductivo se sigue
+de la \cref{def:traduccion} y de los \cref{lem:foco,lem:coherencia}. El
+\cref{lem:capacidad} garantiza que el implante existe.
+\end{proof}
+
+\begin{corolario}[Completitud de Turing]
+\label{thm:turing}
+\dros{} es Turing-completo.
+\end{corolario}
+\begin{proof}
+Un cerebro finito no puede alojar la traducción de \emph{cualquier} máquina de
+Minsky, pero no lo necesita: basta con alojar una máquina universal fija.
+Korec construyó una máquina de registros universal, $U_{32}$, con 32
+instrucciones y 8 registros, cuyas instrucciones son incrementos y
+decrementos con salto condicionado al cero, es decir, $\mathrm{INC}$ y
+$\mathrm{JZDEC}$~\cite{korec1996}. Tiene como mucho 32 instrucciones
+$\mathrm{JZDEC}$ y 8 registros, dentro de las cotas del \cref{lem:capacidad};
+por el \cref{thm:simulacion}, \dros{} la simula, y con ella a cualquier
+máquina de Turing codificada en sus registros de entrada. La memoria no
+acotada reside en los pesos $w_r\in\N$, que el modelo no limita.
+\end{proof}
+
+\paragraph{Verificación empírica.} El guion \texttt{minsky.py} genera
+máquinas de Minsky aleatorias (de 2 a 12 estados, de 1 a 3 registros), las
+traduce según la \cref{def:traduccion}, las ejecuta sobre FlyWire v783 con
+$\beta=64$ y compara los registros finales con una simulación directa. En
+6\,000 máquinas generadas con dos semillas, las 2\,707 que se detienen en
+menos de 2\,000 pasos coincidieron todas con la referencia. Un programa con
+128 pruebas se implanta y termina; con 129, el reclutamiento falla por falta
+de neuronas del cuerno lateral, como predice el \cref{lem:capacidad}.
+
+\begin{observacion}
+Para $\beta$ finito, $P_{\mathcal M}$ es una máquina probabilística cuya
+probabilidad de error en ejecuciones de $\tau$ pasos está acotada por el
+\cref{cor:error}. La actividad natural del resto del cerebro no altera este
+resultado gracias al \cref{lem:margen}.
+\end{observacion}
+
+\subsection{Órbitas en el límite determinista}
+
+\begin{proposicion}[Tricotomía orbital]
+\label{prop:tricotomia}
+Con entrada finita y $\beta=\infty$, toda órbita del implante cumple
+exactamente una de las condiciones siguientes: (i) alcanza el disparo de la
+Fibra Gigante; (ii) es eventualmente periódica; o (iii) tiene
+$\sup_t\max_r w_r(t)=\infty$.
+\end{proposicion}
+\begin{proof}
+El estado del implante es $(s_P,\vec w,\text{agenda})$. Una vez consumida la
+entrada, la agenda sensorial está acotada. Si los pesos permanecen acotados,
+la órbita recorre un conjunto finito de estados y, por el principio del
+palomar, es eventualmente periódica.
+\end{proof}
+
+Los casos (i) y (ii) son detectables por observación, y el intérprete los
+reconoce como \emph{muerte}, \emph{coma} (ciclo del estado nulo) o
+\emph{ciclo}. El caso (iii) es el único donde reside la indecidibilidad del
+problema de la parada~\cite{moore1990}: la memoria no acotada, y con ella lo
+indecidible, reside exclusivamente en las sinapsis.
+
+%% ============================================================================
+\section{Implementación}
+\label{sec:implementacion}
+
+\subsection{Arquitectura}
+
+El intérprete \texttt{drosophila.py}, de unas 1\,100 líneas y dependiente de
+\texttt{numpy} (con \texttt{pandas} y \texttt{pyarrow} solo para la primera
+carga), se organiza en cinco etapas (\cref{fig:arquitectura}).
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+  >={Stealth[length=2mm]},
+  caja/.style={draw,thick,rounded corners=2pt,align=center,
+               minimum height=11mm,text width=22mm,font=\footnotesize,fill=black!3},
+  dato/.style={draw,dashed,rounded corners=2pt,align=center,
+               text width=22mm,font=\scriptsize,fill=yellow!8},
+  node distance=6mm]
+  \node[caja] (lex) {Lexer y\\parser};
+  \node[caja,right=of lex] (rec) {Reclutamiento\\anatómico};
+  \node[caja,right=of rec] (imp) {Implante\\$W^P$, $I(0)$};
+  \node[caja,right=of imp] (din) {Dinámica\\$t\to t+1$};
+  \node[caja,right=of din] (dec) {Lectura motora\\y muerte};
+  \node[dato,above=7mm of lex] (src) {código\\\texttt{.dros}};
+  \node[dato,above=7mm of rec] (fw) {FlyWire v783\\conectividad\\y anotaciones};
+  \node[dato,above=7mm of din] (olor) {olor de entrada\\(\texttt{-{}-olor})};
+  \node[dato,above=7mm of dec] (out) {bytes UTF-8\\y epitafio};
+  \draw[->,thick] (lex) -- (rec);
+  \draw[->,thick] (rec) -- (imp);
+  \draw[->,thick] (imp) -- (din);
+  \draw[->,thick] (din) -- (dec);
+  \draw[->] (src) -- (lex);
+  \draw[->] (fw) -- (rec);
+  \draw[->] (fw.east) to[bend left=12] (din.north west);
+  \draw[->] (olor) -- (din);
+  \draw[->] (dec) -- (out);
+\end{tikzpicture}
+\caption{Arquitectura del intérprete. El conectoma real interviene tanto en
+el reclutamiento de neuronas como en la dinámica de cada paso.}
+\label{fig:arquitectura}
+\end{figure}
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Análisis léxico y sintáctico.} Tokenizador por patrones
+        ordenados y analizador descendente línea a línea, con diagnósticos
+        que indican línea y columna.
+  \item \textbf{Carga del conectoma.} Descarga única (unos 135\,MB) de la
+        conectividad de Shiu \emph{et al.}~\cite{shiu2024} y de las
+        anotaciones de Schlegel \emph{et al.}~\cite{schlegel2024}; se
+        almacena en caché en formato \texttt{npz} comprimido (11\,MB).
+  \item \textbf{Reclutamiento} (\cref{alg:reclutamiento}).
+  \item \textbf{Dinámica}: integración de
+        \eqref{eq:lif}--\eqref{eq:plasticidad} en cada paso.
+  \item \textbf{Decodificación y parada}, con detección de muerte, coma y
+        ciclos mediante una tabla de estados visitados.
+\end{enumerate}
+
+\subsection{Reclutamiento anatómico}
+
+Cada papel del programa se asigna a una neurona libre del tipo
+correspondiente. Cuando existen conexiones reales pertinentes, se elige la
+candidata con más sinapsis reales hacia (o desde) las neuronas ya
+reclutadas; en caso contrario, se toma la primera por hemisferio (derecho
+primero) e identificador. El \cref{alg:reclutamiento} detalla el caso del
+engrama. Las neuronas de control se asignan del mismo modo: la primera de
+cada glomérulo con nombre real es su neurona de proyección, y las siguientes
+son las células de Kenyon que más sinapsis reales reciben de ella.
+
+\begin{algorithm}[t]
+\caption{Reclutamiento anatómico de un engrama $r$.}
+\label{alg:reclutamiento}
+\begin{algorithmic}[1]
+\Require conectoma $(V,c)$; conjunto de neuronas libres $L\subseteq V$
+\Ensure neuronas $(K_r,M_r,\PAM_r,\PPL_r,\ORN_r)$
+\State $E\gets\{(k,m): k\in\KC,\ m\in\MBON,\ c_{mk}\ge c_{\min}\}$ ordenado por $c_{mk}$ decreciente
+\State $(K_r,M_r)\gets$ primer par de $E$ con $k,m\in L$
+\State $\PAM_r\gets\arg\max_{p\in\PAM\cap L} c_{M_r p}$ \Comment{inervación real de $M_r$}
+\State $\PPL_r\gets\arg\max_{q\in\PPL\cap L} c_{M_r q}$
+\State $\ORN_r\gets$ primer receptor libre del glomérulo asociado a $r$
+\State $L\gets L\setminus\{K_r,M_r,\PAM_r,\PPL_r,\ORN_r\}$
+\State \Return $(K_r,M_r,\PAM_r,\PPL_r,\ORN_r)$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Eficiencia}
+
+Las aristas se almacenan en formato disperso ordenado por neurona
+presináptica. En cada paso solo se propagan las espigas de las neuronas
+activas, recogiendo sus segmentos de aristas mediante índices vectorizados y
+acumulando con \texttt{numpy.bincount}. El coste por paso es, por tanto,
+proporcional al número de sinapsis salientes de las neuronas activas y no al
+tamaño total del conectoma. El \cref{lst:paso} reproduce el núcleo del bucle.
+
+\begin{lstlisting}[style=py,caption={Núcleo de un paso de simulación.},label={lst:paso}]
+activas = np.flatnonzero(S)
+entrada_natural = C.empujar(activas)          # espigas por sinapsis reales
+h = (np.bincount(P.post_local, weights=W * S[P.pre], minlength=len(rec))
+     + P.sesgo + I + SUSURRO * entrada_natural[rec])
+S_rec = self._disparar(h, rng)                # implante: Bernoulli(sigma(beta*h))
+v = FUGA_NATURAL * v + entrada_natural        # cerebro natural: integrar y disparar
+bloqueadas = refr > 0
+v[bloqueadas] = 0.0; refr[bloqueadas] -= 1
+S_sig = (v >= UMBRAL_NATURAL) & natural
+v[S_sig] = 0.0; refr[S_sig] = REFRACTARIO
+delta = S[P.dan_up].astype(float) - S[P.dan_down].astype(float)
+W[P.arista_engrama] = np.maximum(0.0, W[P.arista_engrama] + eta * delta)
+\end{lstlisting}
+
+%% ============================================================================
+\section{Resultados}
+\label{sec:resultados}
+
+Todos los experimentos se realizaron sobre FlyWire v783 con los parámetros de
+la \cref{tab:parametros}, en un MacBook Pro con Apple M2 Pro. La primera carga
+del conectoma (descarga y construcción) requirió unos 10\,s; las cargas
+posteriores desde caché, 0,3\,s.
+
+\subsection{Programas de ejemplo}
+
+La \cref{tab:resultados} resume la ejecución de los programas del
+\cref{app:programas}. Todos producen la salida esperada. La columna
+\emph{despertadas} recoge el número de neuronas naturales, no reclutadas, que
+dispararon al menos una vez durante la ejecución; la \emph{fidelidad}, la
+proporción de sinapsis del implante que ya existen en el conectoma real.
+
+\begin{table}[t]
+\centering
+\caption{Ejecución de programas de ejemplo sobre FlyWire v783. $\tau$: paso de
+muerte; $N_p$: neuronas reclutadas.}
+\label{tab:resultados}
+\small
+\begin{tabular}{@{}llllrrrr@{}}
+\toprule
+Programa & Entrada & Salida & $\tau$ & $N_p$ & Despertadas & Fidelidad & Tiempo \\
+\midrule
+\texttt{efe.dros}  & ---      & \texttt{F}            &    3 & 13 &     76 & 1/6   & <0,1\,s \\
+\texttt{hola.dros} & ---      & \texttt{¡Hola, Mundo!} &   17 & 27 &    860 & 1/83  & <0,1\,s \\
+\texttt{suma.dros} & 0, 0     & \texttt{suma: 0}      &   26 & 51 & 3\,248 & 8/84  & <0,1\,s \\
+\texttt{suma.dros} & 0, 5     & \texttt{suma: 5}      &   80 & 51 & 3\,661 & 8/84  & <0,1\,s \\
+\texttt{suma.dros} & 3, 4     & \texttt{suma: 7}      &   87 & 51 & 3\,658 & 8/84  & <0,1\,s \\
+\texttt{suma.dros} & 12, 30   & \texttt{suma: 42}     &  427 & 51 & 3\,970 & 8/84  & 0,21\,s \\
+\texttt{suma.dros} & 200, 300 & \texttt{suma: 500}    & 4\,525 & 51 & 3\,971 & 8/84 & 2,2\,s \\
+\texttt{longitud.dros} & \texttt{mosca} & \texttt{bytes: 5} & 2\,747 & 55 & 2\,173 & 10/98 & 1,2\,s \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Traza de la primera palabra}
+
+El programa \texttt{efe.dros} sopla sobre DA1 y emite el carácter \texttt{F}
+($70=2^6+2^2+2^1$). El reparto real asigna el estado inicial a la neurona de
+proyección DA1\_lPN (id 720575940604407468), la instrucción de muerte a una
+célula de Kenyon $\gamma$ (KCg-m), el estrobo a DNa02 y la muerte a DNp01. En
+$t=1$ dispara DA1\_lPN; en $t=2$ disparan las motoneuronas de los bits 1, 2 y
+6 junto con DNa02, se lee \texttt{F} y 64 neuronas naturales responden a la
+activación del glomérulo feromonal, 48 de ellas células de Kenyon; en $t=3$
+dispara la Fibra Gigante. La traza completa figura en el \cref{app:traza}.
+
+\subsection{Suma por transferencia sináptica}
+
+El programa \texttt{suma.dros} lee dos concentraciones en los engramas
+\texttt{alfa} y \texttt{beta}, transfiere \texttt{beta} a \texttt{alfa} unidad a
+unidad y vacía \texttt{alfa} a través de MN9. El reclutamiento seleccionó, a
+partir de la conectividad real, la pareja KCg-s2~$\to$~MBON05 como sinapsis
+de ambos engramas, la dopaminérgica PAM08 como escritora y PPL101 y PPL108
+como borradoras (\cref{tab:reparto}). En la traza con entrada $(2,1)$ se
+observa cómo la MBON05 responde a la célula de Kenyon cuando el engrama vale
+1 (paso 14) y permanece en silencio cuando vale 0 (paso 19), lo que dirige el
+flujo de control a través de las compuertas del cuerno lateral.
+
+\begin{table}[t]
+\centering
+\caption{Reparto parcial de \texttt{suma.dros}: papel del programa y neurona
+real reclutada (tipo celular FlyWire, hemisferio e identificador).}
+\label{tab:reparto}
+\small
+\begin{tabular}{@{}lllr@{}}
+\toprule
+Papel & Tipo celular & Hemisferio & Identificador FlyWire \\
+\midrule
+KC$\cdot$alfa         & KCg-s2    & izq. & 720575940620684014 \\
+MBON$\cdot$alfa       & MBON05    & der. & 720575940630496374 \\
+PAM$\cdot$alfa        & PAM08     & izq. & 720575940621617286 \\
+PPL1$\cdot$alfa       & PPL108    & der. & 720575940615750562 \\
+ORN$\cdot$alfa        & ORN\_DM2  & der. & 720575940603356128 \\
+PPL1$\cdot$beta       & PPL101    & der. & 720575940617691170 \\
+estado \texttt{(DM1)} & DM1\_lPN  & der. & 720575940619071005 \\
+estado \texttt{(VA2)} & VA2\_adPN & der. & 720575940609460491 \\
+estrobo               & DNa02     & der. & 720575940604737708 \\
+probóscide            & MN9       & der. & 720575940660219265 \\
+muerte                & DNp01     & der. & 720575940632499757 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+La \cref{fig:actividad} muestra el número de neuronas naturales activas en
+cada paso para la entrada $(3,4)$. Pueden distinguirse las cinco fases del
+programa: percepción, transferencia, escritura, vaciado y muerte. Los picos
+de actividad (hasta 637 neuronas) coinciden con la activación de receptores
+olfativos y de neuronas de proyección, que reclutan de forma dispersa
+células de Kenyon del cáliz.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.88\linewidth, height=5.6cm, scale only axis=false,
+  xlabel={paso $t$}, ylabel={neuronas naturales activas},
+  xmin=0, xmax=88, ymin=0, ymax=700,
+  grid=major, grid style={black!10},
+  tick label style={font=\footnotesize}, label style={font=\small},
+  /pgf/number format/use comma,
+  /pgf/number format/1000 sep={\,},
+]
+  \fill[green!8]  (axis cs:0.5,0)  rectangle (axis cs:15.5,700);
+  \fill[blue!6]   (axis cs:15.5,0) rectangle (axis cs:39.5,700);
+  \fill[orange!8] (axis cs:39.5,0) rectangle (axis cs:46.5,700);
+  \fill[red!5]    (axis cs:46.5,0) rectangle (axis cs:84.5,700);
+  \fill[black!8]  (axis cs:84.5,0) rectangle (axis cs:87.5,700);
+  \node[font=\scriptsize] at (axis cs:8,670)  {percepción};
+  \node[font=\scriptsize] at (axis cs:27.5,670) {transferencia};
+  \node[font=\scriptsize,rotate=90] at (axis cs:42.5,560) {escritura};
+  \node[font=\scriptsize] at (axis cs:65,670) {vaciado por MN9};
+  \node[font=\scriptsize,rotate=90] at (axis cs:86,580) {muerte};
+  \addplot[thick,blue!60!black,mark=*,mark size=0.9pt] coordinates {
+  (1,0) (2,462) (3,101) (4,147) (5,78) (6,23) (7,4) (8,54) (9,22) (10,637)
+  (11,138) (12,234) (13,175) (14,127) (15,65) (16,73) (17,505) (18,224)
+  (19,222) (20,208) (21,277) (22,521) (23,271) (24,300) (25,217) (26,227)
+  (27,492) (28,270) (29,259) (30,214) (31,243) (32,595) (33,220) (34,247)
+  (35,240) (36,290) (37,507) (38,188) (39,208) (40,261) (41,321) (42,165)
+  (43,152) (44,145) (45,98) (46,71) (47,90) (48,201) (49,133) (50,101)
+  (51,131) (52,196) (53,120) (54,76) (55,95) (56,206) (57,195) (58,119) (59,124) (60,131) (61,112) (62,137) (63,107) (64,200) (65,133) (66,112) (67,187) (68,149) (69,105) (70,73) (71,100) (72,260) (73,152) (74,105) (75,120) (76,144) (77,168) (78,89) (79,94) (80,199) (81,140) (82,166) (83,138) (84,135) (85,102) (86,141) (87,97)};
+\end{axis}
+\end{tikzpicture}
+\caption{Actividad evocada en el cerebro real FlyWire durante la ejecución
+de \texttt{suma.dros} con entrada $(3,4)$. Las bandas indican las fases del
+programa. En total despertaron 3\,658 neuronas distintas.}
+\label{fig:actividad}
+\end{figure}
+
+\subsection{Puertas lógicas}
+
+La \cref{tab:puertas} recoge la verificación empírica de las
+puertas~\eqref{eq:puertas} con neuronas estocásticas a $\beta=64$: 10\,000
+ensayos por fila, 200\,000 en total, sin ningún error.
+
+\begin{table}[t]
+\centering
+\caption{Tablas de verdad empíricas de las puertas de umbral estocásticas
+($\beta=64$, $10^4$ ensayos por combinación de entradas).}
+\label{tab:puertas}
+\small
+\begin{tabular}{@{}llccccr@{}}
+\toprule
+Puerta & Correlato anatómico & 00 & 01 & 10 & 11 & Errores \\
+\midrule
+Y    & célula de Kenyon (coincidencia)  & 0 & 0 & 0 & 1 & 0 \\
+O    & MBON excitada                    & 0 & 1 & 1 & 1 & 0 \\
+NO   & inhibición GABAérgica (APL)      & 1 & 1 & 0 & 0 & 0 \\
+NOY  & MBON tónica inhibida             & 1 & 1 & 1 & 0 & 0 \\
+XOR  & dos capas (O $\wedge$ NOY)       & 0 & 1 & 1 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Robustez frente a la temperatura}
+
+Ejecutamos \texttt{suma.dros} con entrada $(3,4)$ para distintos valores de
+$\beta$ con 40 semillas independientes cada uno. La \cref{tab:temperatura}
+revela una transición abrupta: la fiabilidad es perfecta para $\beta\ge24$,
+cae al 50\,\% para $\beta=16$ y es nula para $\beta\le12$. En el régimen de
+alta temperatura, los fallos típicos son disparos espurios de la Fibra
+Gigante (muerte prematura) y emisión de bytes aleatorios. Los resultados son
+consistentes con el \cref{cor:error}. Para $\beta=16$, la cota por neurona y
+paso es $\sig(-6)\approx2{,}5\times10^{-3}$; con $N_p=51$ y $\tau=87$, el
+número esperado de desviaciones por ejecución es de aproximadamente $11$,
+por lo que la cota deja de ser informativa. Para $\beta=24$, la cota de la
+unión es de $0{,}55$, mientras que no se observó ningún fallo en 40
+ejecuciones: la cota es conservadora, porque no toda desviación individual
+altera la salida.
+
+\begin{table}[t]
+\centering
+\caption{Fiabilidad de \texttt{suma.dros} (entrada $(3,4)$) en función de la
+inversa de la temperatura del implante. Cota: $\sig(-3\beta/8)$ por neurona y
+paso.}
+\label{tab:temperatura}
+\small
+\begin{tabular}{@{}rrrr@{}}
+\toprule
+$\beta$ & $T$ & Cota por neurona y paso & Ejecuciones correctas \\
+\midrule
+64 & 0,016 & $3{,}8\times10^{-11}$ & 40/40 \\
+32 & 0,031 & $6{,}1\times10^{-6}$  & 40/40 \\
+24 & 0,042 & $1{,}2\times10^{-4}$  & 40/40 \\
+16 & 0,063 & $2{,}5\times10^{-3}$  & 20/40 \\
+12 & 0,083 & $1{,}1\times10^{-2}$  & 0/40 \\
+ 8 & 0,125 & $4{,}7\times10^{-2}$  & 0/40 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%% ============================================================================
+\section{Discusión}
+\label{sec:discusion}
+
+\paragraph{Fidelidad anatómica.} Las identidades, tipos celulares y
+conexiones de salida de todas las neuronas son reales, y el reclutamiento
+favorece las conexiones existentes. Aun así, solo 8 de las 84 sinapsis (10\,\%)
+del implante de \texttt{suma.dros} existen en el conectoma: el resto actúa
+como un transgén. Esta proporción cuantifica el coste de programar un
+cerebro que no evolucionó para sumar. Resulta llamativo, sin embargo, que el
+reclutamiento guiado por la conectividad asocie de forma espontánea MBON05
+con PAM08, dos tipos que comparten compartimento en el lóbulo $\gamma$.
+
+\paragraph{Protección del cómputo.} El coeficiente de susurro $\kappa=\tfrac18$
+y la normalización~\eqref{eq:normalizacion} garantizan que la actividad
+natural no puede corromper el implante (\cref{lem:margen}). Se trata de una
+elección de diseño deliberada: sin ella, el cómputo dependería de la
+dinámica natural, que no está calibrada biofísicamente. La contrapartida es
+que el cerebro natural observa y reacciona al programa, pero no participa en
+sus decisiones.
+
+\paragraph{Limitaciones del modelo natural.} La dinámica natural es una
+simplificación en tiempo discreto de un modelo de integración y disparo;
+no pretende reproducir tasas de disparo fisiológicas ni el modelo de Shiu
+\emph{et al.}~\cite{shiu2024}. En particular, la normalización por entrada
+total altera la eficacia relativa de las sinapsis, y en nuestras pruebas no
+reprodujo la activación de MN9 por neuronas gustativas de azúcar descrita
+por dichos autores.
+
+\paragraph{Restricciones impuestas por la anatomía.} El número de engramas
+queda limitado a 16 por el número de neuronas PPL1, y el de pruebas a 128 por
+el de neuronas locales del cuerno lateral. Estas restricciones no comprometen
+la universalidad, porque la máquina universal de Korec cabe en ellas
+(\cref{thm:turing}), pero ilustran cómo la anatomía real se convierte en una
+restricción del lenguaje. Una restricción de otro tipo es que la salida solo
+puede emitir bytes fijados en el código o el recuento decimal de espigas de
+MN9: un byte calculado no puede emitirse directamente, lo que limita la
+manipulación de texto a programas como \texttt{longitud.dros}, que leen texto
+y producen números.
+
+\paragraph{Trabajo futuro.} Entre las extensiones naturales se cuentan:
+permitir que la dinámica natural participe en el cómputo mediante
+instrucciones que consulten neuronas no reclutadas; sustituir la dinámica
+discreta por un modelo biofísico calibrado; explotar la conectividad real
+para compilar programas que maximicen la fidelidad anatómica; y portar el
+lenguaje a otros conectomas, como el de la larva de \textit{Drosophila}.
+
+%% ============================================================================
+\section{Conclusiones}
+\label{sec:conclusiones}
+
+Hemos presentado \dros{}, un lenguaje esotérico Turing-completo que se
+ejecuta sobre el conectoma completo de una mosca adulta. Su memoria reside
+en sinapsis célula de Kenyon $\to$ MBON reescritas por dopamina, su control
+de flujo en neuronas de proyección, células de Kenyon y neuronas del cuerno
+lateral, y su salida en motoneuronas identificadas, hasta la Fibra Gigante
+que pone fin a la ejecución. Hemos demostrado su completitud de Turing,
+acotado su error estocástico y caracterizado sus órbitas, y hemos mostrado
+empíricamente que el intérprete ejecuta correctamente programas no triviales
+mientras cuantifica la respuesta evocada en miles de neuronas reales.
+Además de su interés como objeto lúdico, \dros{} ofrece un banco de pruebas
+formal y reproducible para reflexionar sobre la relación entre la estructura
+de un conectoma y el cómputo que puede albergar.
+
+%% ============================================================================
+\section*{Disponibilidad de código y datos}
+El intérprete \texttt{drosophila.py} y los programas de ejemplo están
+disponibles en \url{https://github.com/USUARIO/drosophila-lang}. Los datos de
+conectividad proceden del repositorio público de Shiu \emph{et al.}
+(\url{https://github.com/philshiu/Drosophila_brain_model}) y las anotaciones,
+de \url{https://github.com/flyconnectome/flywire_annotations}; su uso está
+sujeto a los términos del consorcio FlyWire.
+
+\section*{Agradecimientos}
+[Completar: financiación, colaboraciones y, en su caso, declaración sobre el
+uso de herramientas de asistencia en la redacción o el desarrollo de
+software, conforme a la política de arXiv.]
+
+%% ============================================================================
+\begin{thebibliography}{99}
+\small
+
+\bibitem{allen2006}
+M.~J. Allen, T.~A. Godenschwege, M.~A. Tanouye y P.~Phelan.
+\newblock Making an escape: development and function of the \textit{Drosophila}
+  giant fibre system.
+\newblock \emph{Seminars in Cell \& Developmental Biology}, 17(1):31--41, 2006.
+
+\bibitem{aso2014}
+Y.~Aso, D.~Hattori, Y.~Yu, R.~M. Johnston, N.~A. Iyer, T.-T.~B. Ngo, H.~Dionne,
+  L.~F. Abbott, R.~Axel, H.~Tanimoto y G.~M. Rubin.
+\newblock The neuronal architecture of the mushroom body provides a logic for
+  associative learning.
+\newblock \emph{eLife}, 3:e04577, 2014.
+
+\bibitem{caron2013}
+S.~J.~C. Caron, V.~Ruta, L.~F. Abbott y R.~Axel.
+\newblock Random convergence of olfactory inputs in the \textit{Drosophila}
+  mushroom body.
+\newblock \emph{Nature}, 497:113--117, 2013.
+
+\bibitem{cohn2015}
+R.~Cohn, I.~Morantte y V.~Ruta.
+\newblock Coordinated and compartmentalized neuromodulation shapes sensory
+  processing in \textit{Drosophila}.
+\newblock \emph{Cell}, 163(7):1742--1755, 2015.
+
+\bibitem{dorkenwald2024}
+S.~Dorkenwald \emph{et al.}
+\newblock Neuronal wiring diagram of an adult brain.
+\newblock \emph{Nature}, 634:124--138, 2024.
+
+\bibitem{gordon2009}
+M.~D. Gordon y K.~Scott.
+\newblock Motor control in a \textit{Drosophila} taste circuit.
+\newblock \emph{Neuron}, 61(3):373--384, 2009.
+
+\bibitem{hige2015}
+T.~Hige, Y.~Aso, M.~N. Modi, G.~M. Rubin y G.~C. Turner.
+\newblock Heterosynaptic plasticity underlies aversive olfactory learning in
+  \textit{Drosophila}.
+\newblock \emph{Neuron}, 88(5):985--998, 2015.
+
+\bibitem{kurtovic2007}
+A.~Kurtovic, A.~Widmer y B.~J. Dickson.
+\newblock A single class of olfactory neurons mediates behavioural responses to
+  a \textit{Drosophila} sex pheromone.
+\newblock \emph{Nature}, 446:542--546, 2007.
+
+\bibitem{lappalainen2024}
+J.~K. Lappalainen \emph{et al.}
+\newblock Connectome-constrained networks predict neural activity across the
+  fly visual system.
+\newblock \emph{Nature}, 634:1132--1140, 2024.
+
+\bibitem{lin2014}
+A.~C. Lin, A.~M. Bygrave, A.~de~Calignon, T.~Lee y G.~Miesenb\"ock.
+\newblock Sparse, decorrelated odor coding in the mushroom body enhanced by
+  lateral inhibition.
+\newblock \emph{Nature Neuroscience}, 17:559--568, 2014.
+
+\bibitem{mateas2005}
+M.~Mateas y N.~Montfort.
+\newblock A box, darkly: obfuscation, weird languages, and code aesthetics.
+\newblock En \emph{Proceedings of the 6th Digital Arts and Culture Conference},
+  pp.~144--153, Copenhague, 2005.
+
+\bibitem{mcculloch1943}
+W.~S. McCulloch y W.~Pitts.
+\newblock A logical calculus of the ideas immanent in nervous activity.
+\newblock \emph{Bulletin of Mathematical Biophysics}, 5:115--133, 1943.
+
+\bibitem{minsky1967}
+M.~L. Minsky.
+\newblock \emph{Computation: Finite and Infinite Machines}.
+\newblock Prentice-Hall, Englewood Cliffs, NJ, 1967.
+
+\bibitem{korec1996}
+I.~Korec.
+\newblock Small universal register machines.
+\newblock \emph{Theoretical Computer Science}, 168:267--301, 1996.
+
+\bibitem{moore1990}
+C.~Moore.
+\newblock Unpredictability and undecidability in dynamical systems.
+\newblock \emph{Physical Review Letters}, 64(20):2354--2357, 1990.
+
+\bibitem{namiki2018}
+S.~Namiki, M.~H. Dickinson, A.~M. Wong, W.~Korff y G.~M. Card.
+\newblock The functional organization of descending sensory-motor pathways in
+  \textit{Drosophila}.
+\newblock \emph{eLife}, 7:e34272, 2018.
+
+\bibitem{scheffer2020}
+L.~K. Scheffer \emph{et al.}
+\newblock A connectome and analysis of the adult \textit{Drosophila} central
+  brain.
+\newblock \emph{eLife}, 9:e57443, 2020.
+
+\bibitem{schlegel2024}
+P.~Schlegel \emph{et al.}
+\newblock Whole-brain annotation and multi-connectome cell typing of
+  \textit{Drosophila}.
+\newblock \emph{Nature}, 634:139--152, 2024.
+
+\bibitem{shiu2024}
+P.~K. Shiu \emph{et al.}
+\newblock A \textit{Drosophila} computational brain model reveals sensorimotor
+  processing.
+\newblock \emph{Nature}, 634:210--219, 2024.
+
+\bibitem{siegelmann1995}
+H.~T. Siegelmann y E.~D. Sontag.
+\newblock On the computational power of neural nets.
+\newblock \emph{Journal of Computer and System Sciences}, 50(1):132--150, 1995.
+
+\end{thebibliography}
+
+%% ============================================================================
+\appendix
+
+\section{Programas de ejemplo}
+\label{app:programas}
+
+\begin{lstlisting}[style=dros,caption={\texttt{efe.dros}: emisión del carácter F.},label={lst:efe}]
+;; efe.dros -- la primera palabra de la mosca
+%cepa Canton-S
+
+~~~> (DA1)                 ;; soplo de feromona sobre el glomérulo DA1
+(DA1) !'F' x_x             ;; emitir 0x46 y morir
+\end{lstlisting}
+
+\begin{lstlisting}[style=dros,caption={\texttt{hola.dros}: saludo en UTF-8 mediante azúcar de cadena.},label={lst:hola}]
+;; hola.dros -- saludo completo
+%cepa w1118
+~~~> (DM1)
+(DM1) !"¡Hola, Mundo!\n" ~> (DA1)
+(DA1) x_x
+\end{lstlisting}
+
+\begin{lstlisting}[style=dros,caption={\texttt{suma.dros}: suma por transferencia sináptica.},label={lst:suma}]
+;; suma.dros -- la mosca que aprende a contar
+%cepa Oregon-R
+
+$ alfa = 0                         ;; sinapsis KC -> MBON, virgen
+$ beta = 0                         ;; sinapsis KC -> MBON, virgen
+
+~~~> (DM1)
+(DM1) <alfa <beta ~> (VA2)         ;; percibir dos olores, grabar dos engramas
+(VA2) ?beta ~> (VA3) | (DL5)       ;; ¿queda recuerdo en beta?
+(VA3) +alfa ~> (VA2)               ;; pasar una unidad de beta a alfa
+(DL5) !"suma: " ?alfa ~> (DA2) | (VM5d)   ;; primera lectura: si no hay nada, decir 0
+(DA1) ?alfa ~> (DA2) | (VM7d)      ;; vaciar alfa por la probóscide
+(DA2) !* ~> (DA1)                  ;; una extensión de probóscide por unidad
+(VM5d) !'0' ~> (VM7d)              ;; suma nula: un 0 explícito
+(VM7d) !'\n' x_x
+\end{lstlisting}
+
+\begin{lstlisting}[style=dros,caption={\texttt{longitud.dros}: longitud en bytes de un texto olido (\texttt{--olor-texto}).},label={lst:longitud}]
+;; longitud.dros -- la mosca cuenta las letras de un texto olido
+;; Cada byte llega como una concentración; el fin del texto huele a 0.
+%cepa Canton-S
+
+$ n = 0                            ;; engrama contador de bytes
+
+~~~> (DM1)
+(DM1) <c ~> (VA2)                  ;; oler el siguiente byte
+(VA2) ?c ~> (VA3) | (DL5)          ;; olor nulo: se acabó el texto
+(VA3) ?c ~> (VA3) | (VA4)          ;; olvidar el resto de ese olor
+(VA4) +n ~> (DM1)                  ;; recordar un byte más
+(DL5) !"bytes: " ?n ~> (DA2) | (VM5d)
+(DA1) ?n ~> (DA2) | (VM7d)         ;; vaciar el contador por la probóscide
+(DA2) !* ~> (DA1)
+(VM5d) !'0' ~> (VM7d)
+(VM7d) !'\n' x_x
+\end{lstlisting}
+
+\section{Trazas de ejecución}
+\label{app:traza}
+
+El \cref{lst:traza-efe} reproduce la traza completa de \texttt{efe.dros} y el
+\cref{lst:traza-suma}, un extracto de \texttt{suma.dros} con entrada $(2,1)$.
+Cada línea indica el paso, las neuronas reclutadas activas (papel y, entre
+ángulos, tipo celular real), los pesos de los engramas y la actividad natural
+por clase. Los símbolos no ASCII de la salida original se han transcrito.
+
+\begin{lstlisting}[caption={Traza completa de \texttt{efe.dros}.},label={lst:traza-efe}]
+t=0 | I(0): soplo sobre (DA1) = DA1_lPN . ALPN . right . id 720575940604407468
+    | cerebro FlyWire v783: 138639 neuronas, 2700513 conexiones | implante: 13 neuronas
+t=1 | DA1.0[!'F']<DA1_lPN>                                  | cerebro: 0
+t=2 | bit1<CB0845> . bit2<CB0918> . bit6<CB0783> . estrobo<DNa02> . DA1.1[x_x]<KCg-m>
+    | cerebro: 64 (Kenyon_Cell 48, central 14, ALPN 2)
+t=3 | muerte<DNp01>                                         | cerebro: 12 (Kenyon_Cell 6, central 4, DAN 2)
++ FlyWire v783 . t = 3 . disparo de la Fibra Gigante . 76 neuronas despertaron
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Extracto de la traza de \texttt{suma.dros} con entrada $(2,1)$.},label={lst:traza-suma}]
+t=1  | DM1.0[<alfa]<DM1_lPN>               | alfa=0 beta=0 | cerebro: 0
+t=2  | -                                    | alfa=0 beta=0 | cerebro: 462 (Kenyon_Cell 346, ...)
+t=3  | ORN.alfa<ORN_DM2>                   | alfa=0 beta=0 | cerebro: 101
+t=4  | PAM.alfa<PAM08> . ORN.alfa<ORN_DM2> | alfa=0 beta=0 | cerebro: 147
+t=5  | PAM.alfa<PAM08>                     | alfa=1 beta=0 | cerebro: 78
+t=6  | DM1.0.retorno<lLN2T_b>              | alfa=2 beta=0 | cerebro: 23
+t=11 | DM1.1.retorno<CB1686>               | alfa=2 beta=1 | cerebro: 235
+t=12 | VA2.0[?beta]<VA2_adPN>              | alfa=2 beta=1 | cerebro: 175
+t=13 | KC.beta<KCg-s2> . VA2.retardo1      | alfa=2 beta=1 | cerebro: 500
+t=14 | MBON.beta<MBON05> . VA2.retardo2    | alfa=2 beta=1 | cerebro: 151
+t=15 | VA2.si->(VA3)<LHAV2m1>              | alfa=2 beta=1 | cerebro: 215
+t=16 | PPL1.beta<PPL101> . VA3.0[+alfa]    | alfa=2 beta=1 | cerebro: 236
+t=17 | PAM.alfa<PAM08> . VA2.0[?beta]      | alfa=2 beta=0 | cerebro: 300
+t=18 | KC.beta<KCg-s2> . VA2.retardo1      | alfa=3 beta=0 | cerebro: 486
+t=19 | VA2.retardo2<CB1058>                | alfa=3 beta=0 | cerebro: 203
+t=20 | VA2.no->(DL5)<CB2211>               | alfa=3 beta=0 | cerebro: 231
+...
+t=47 | bit1 . bit3 . estrobo<DNa02> . VM7d.1[x_x]<KCab>   | alfa=0 beta=0 | cerebro: 265
+t=48 | muerte<DNp01>                       | alfa=0 beta=0 | cerebro: 139
+\end{lstlisting}
+
+\end{document}

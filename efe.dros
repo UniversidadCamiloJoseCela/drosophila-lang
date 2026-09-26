@@ -1,0 +1,5 @@
+;; efe.dros — la primera palabra de la mosca
+%cepa Canton-S
+
+~~~> (DA1)                 ;; soplo de cVA sobre el glomérulo feromonal
+(DA1) !'F' x_x             ;; emitir 0x46 y morir

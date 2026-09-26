@@ -1,0 +1,16 @@
+;; longitud.dros — la mosca cuenta las letras de un texto olido
+;; Cada byte del texto llega como una concentración; el fin del texto huele a 0.
+%cepa Canton-S
+
+§ n = 0                            ;; engrama contador de bytes
+
+~~~> (DM1)
+(DM1) <c ~> (VA2)                  ;; oler el siguiente byte
+(VA2) ?c ~> (VA3) | (DL5)          ;; olor nulo: se acabó el texto
+(VA3) ?c ~> (VA3) | (VA4)          ;; olvidar el resto de ese olor
+(VA4) +n ~> (DM1)                  ;; recordar un byte más
+(DL5) !"bytes: " ?n ~> (DA2) | (VM5d)
+(DA1) ?n ~> (DA2) | (VM7d)         ;; vaciado del contador por la probóscide
+(DA2) !* ~> (DA1)
+(VM5d) !'0' ~> (VM7d)
+(VM7d) !'\n' x_x

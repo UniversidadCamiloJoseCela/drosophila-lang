@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+.DS_Store
+*_3d.html
+articulo/*.aux
+articulo/*.log
+articulo/*.out
+articulo/*.toc
+articulo/*.fdb_latexmk
+articulo/*.fls

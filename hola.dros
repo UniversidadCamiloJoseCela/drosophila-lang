@@ -1,0 +1,5 @@
+;; hola.dros — saludo completo (azúcar de cadena)
+%cepa w1118
+~~~> (DM1)
+(DM1) !"¡Hola, Mundo!\n" ~> (DA1)
+(DA1) x_x

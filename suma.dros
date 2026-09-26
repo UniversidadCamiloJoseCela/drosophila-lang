@@ -1,0 +1,15 @@
+;; suma.dros — la mosca que aprende a contar
+%cepa Oregon-R
+
+§ alfa = 0                         ;; sinapsis KC·alfa → MBON·alfa, virgen
+§ beta = 0                         ;; sinapsis KC·beta → MBON·beta, virgen
+
+~~~> (DM1)
+(DM1) <alfa <beta ~> (VA2)         ;; percepción: dos olores, dos engramas
+(VA2) ?beta ~> (VA3) | (DL5)       ;; ¿queda recuerdo en beta?  (≠0: se olvida uno)
+(VA3) +alfa ~> (VA2)               ;; transferencia dopaminérgica beta → alfa
+(DL5) !"suma: " ?alfa ~> (DA2) | (VM5d)   ;; primera lectura: si no hay nada, decir 0
+(DA1) ?alfa ~> (DA2) | (VM7d)      ;; vaciado del engrama por la probóscide
+(DA2) !* ~> (DA1)                  ;; una espiga de MN9 por unidad
+(VM5d) !'0' ~> (VM7d)              ;; suma nula: un «0» explícito
+(VM7d) !'\n' x_x
