@@ -20,7 +20,7 @@ suma: 7
 
 | Documento | Para quién |
 |---|---|
-| [`docs/drosophila_lang_explicado.pdf`](docs/drosophila_lang_explicado.pdf) | Explicación divulgativa: cómo se escribe un programa, qué pasa dentro del cerebro y por qué el lenguaje es Turing-completo. Es el mejor punto de partida. |
+| [`docs/drosophila_lang_explicado.pdf`](docs/drosophila_lang_explicado.pdf) | Explicación de nivel de tercero de carrera: cómo se escribe un programa, el modelo de neurona con el que se ejecuta y la demostración de que el lenguaje es Turing-completo, con poco formalismo matemático. Es el mejor punto de partida. |
 | [`docs/diapositivas.pdf`](docs/diapositivas.pdf) | Presentación del proyecto. |
 | [`presentacion/index.html`](presentacion/index.html) | Presentación interactiva de unos 10 minutos para clase: se abre en el navegador sin instalar nada. Tiene el cerebro real en 3D, un intérprete para probar programas y la ejecución real de una suma. Flechas para avanzar, N para las notas de quien presenta. |
 | [`articulo/drosophila_lang.pdf`](articulo/drosophila_lang.pdf) | Artículo formal: modelo dinámico, gramática EBNF, semántica operacional, demostración de completitud de Turing por reducción a máquinas de Minsky, cota de error y resultados. El código LaTeX está en [`articulo/drosophila_lang.tex`](articulo/drosophila_lang.tex). |
