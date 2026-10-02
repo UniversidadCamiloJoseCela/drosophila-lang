@@ -16,6 +16,11 @@ suma: 7
 ✝ FlyWire v783 · t = 87 · disparó la Fibra Gigante — muerte temporal · engramas: alfa=0, beta=0 · 3658 neuronas del cerebro despertaron en su vida
 ```
 
+![suma.dros con la entrada 3 y 4: actividad de las neuronas del cerebro FlyWire en cada paso hasta escribir «suma: 7»](docs/suma.gif)
+
+En azul, las neuronas que ejecutan el programa; en naranja, las del resto del cerebro
+que se activan con ellas. Cada cuadro es un paso de la simulación.
+
 ## Documentación
 
 | Documento | Para quién |
@@ -166,6 +171,7 @@ visor3d.py             visor 3D de la actividad neuronal (genera un HTML)
 envivo.py              simulación en tiempo real en el navegador
 minsky.py              comprobación empírica de la reducción a máquinas de Minsky
 scripts/figuras.py     genera los datos de las figuras y tablas del artículo explicativo
+scripts/gif_suma.py    genera docs/suma.gif (necesita Pillow)
 *.dros                 programas de ejemplo
 instalar.sh, mosca.sh  instalación y ejecución
 articulo/              artículo formal (LaTeX y PDF)
